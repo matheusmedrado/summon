@@ -214,7 +214,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if let outsideClick { NSEvent.removeMonitor(outsideClick) }
         outsideClick = nil
         statusItem.button?.highlight(false)
-        guard let panel, panel.isVisible else { return }
+        // Drop the panel instead of keeping it hidden: its SwiftUI animations
+        // repeat forever and would keep rendering offscreen.
+        guard let panel else { return }
+        self.panel = nil
+        guard panel.isVisible else { return }
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.1
             panel.animator().alphaValue = 0
@@ -263,6 +267,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         store.cancelRecording()
         NSApp.setActivationPolicy(.accessory)
+        // Release the window so its SwiftUI animations stop with it.
+        DispatchQueue.main.async { self.window = nil }
     }
 }
 
