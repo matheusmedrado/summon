@@ -268,6 +268,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
 if CommandLine.arguments.contains("--selftest") { exit(SelfTest.run()) }
 SingleInstance.handOffIfAlreadyRunning()
+dropShellEnvironment()
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate

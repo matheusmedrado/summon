@@ -17,6 +17,22 @@ func summon(_ binding: Binding) {
     }
 }
 
+/// Apps opened with NSWorkspace inherit Summon's environment. When Summon
+/// itself was started from a terminal (`open`, `./build.sh install`), that
+/// is the shell's: TERM, prompt settings, whatever the terminal session set.
+/// Keep only what launchd gives an app opened from the Dock, so summoned
+/// apps start as if clicked there.
+func dropShellEnvironment() {
+    let keep: Set<String> = [
+        "HOME", "USER", "LOGNAME", "SHELL", "PATH", "TMPDIR", "LANG",
+        "SSH_AUTH_SOCK", "COMMAND_MODE", "XPC_FLAGS", "XPC_SERVICE_NAME",
+        "__CF_USER_TEXT_ENCODING", "__CFBundleIdentifier", "SUMMON_AGENT",
+    ]
+    for name in ProcessInfo.processInfo.environment.keys where !keep.contains(name) {
+        unsetenv(name)
+    }
+}
+
 /// Posts a key press that Summon's own tap will let through.
 func press(_ key: Int, _ flags: CGEventFlags) {
     var flags = flags
