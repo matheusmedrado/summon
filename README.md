@@ -72,7 +72,7 @@ Requires macOS 14 or later.
 ./build.sh install
 ```
 
-macOS ties the Accessibility permission to the app's signature, so an ad-hoc build needs granting again after every rebuild. To keep it, create a self-signed certificate named `Summon Local Signing` (Keychain Access > Certificate Assistant > Create a Certificate, type Code Signing) and `build.sh` will sign with it.
+macOS ties the Accessibility permission to the app's signature, so an ad-hoc build needs granting again after every rebuild. To keep it, create a self-signed certificate named `Summon Local Signing` (Keychain Access > Certificate Assistant > Create a Certificate, type Code Signing) and `build.sh` will sign with it. The first build asks to let `codesign` use the certificate's key: choose Always Allow. The app is built for both Apple silicon and Intel and each is signed separately, so plain Allow asks twice, on every build.
 
 ## Contributing
 

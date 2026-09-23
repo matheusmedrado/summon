@@ -28,6 +28,8 @@ cp "Resources/$LABEL.plist" "$APP/Contents/Library/LaunchAgents/"
 # macOS keeps the Accessibility permission across updates. Without it
 # (ad-hoc), every build counts as a new app and needs granting again.
 IDENTITY=$(security find-certificate -c "Summon Local Signing" -Z 2>/dev/null | awk '/SHA-1/{print $NF}')
+# codesign reads the key once per architecture, so plain "Allow" asks twice.
+[ -n "$IDENTITY" ] && echo "If macOS asks to let codesign use the key, choose Always Allow."
 codesign --force --sign "${IDENTITY:--}" --identifier "$LABEL" "$APP" >/dev/null
 echo "Built $APP ($VERSION)"
 
