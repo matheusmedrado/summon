@@ -31,7 +31,8 @@ enum SelfTest {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("summon-selftest.json")
         let config = Config(
             bindings: [.init(keys: "cmd+e", app: "Finder"),
-                       .init(keys: "cmd+shift+return", app: "/Applications/My \"Odd\" App.app", newWindow: false)],
+                       .init(keys: "cmd+shift+return", app: "/Applications/My \"Odd\" App.app", newWindow: .off),
+                       .init(keys: "cmd+return", app: "Ghostty", newWindow: .always)],
             remaps: [.init(keys: "ctrl+delete", send: "opt+delete"),
                      .init(keys: "cmd+shift+k", send: "cmd+a cmd+c", app: "Safari", notWhileTyping: true)],
             finderCut: true)
@@ -42,7 +43,7 @@ enum SelfTest {
             check("saves one entry per line", text.contains("{ \"keys\": \"cmd+e\","))
             check("keeps slashes readable", !text.contains("\\/"))
             check("round trips app hotkeys", back.bindings.map(\.app) == config.bindings.map(\.app)
-                  && back.bindings[1].newWindow == false)
+                  && back.bindings[1].newWindow == .off && back.bindings[2].newWindow == .always)
             check("round trips remaps", back.remaps?.map(\.send) == ["opt+delete", "cmd+a cmd+c"]
                   && back.remaps?[1].app == "Safari" && back.remaps?[1].notWhileTyping == true)
             check("round trips Finder cut", back.finderCut == true)

@@ -76,9 +76,9 @@ final class Store: ObservableObject {
         recordingID = nil
     }
 
-    func toggleNewWindow(_ id: UUID) {
+    func setNewWindow(_ mode: NewWindow, for id: UUID) {
         guard let i = entries.firstIndex(where: { $0.id == id }) else { return }
-        entries[i].newWindow = !(entries[i].newWindow ?? true) ? nil : false
+        entries[i].newWindow = mode == .whenInFront ? nil : mode
         save()
     }
 
@@ -187,7 +187,7 @@ final class Store: ObservableObject {
 
     private static func sameEntries(_ a: [Config.Entry], _ b: [Config.Entry]) -> Bool {
         a.count == b.count && zip(a, b).allSatisfy {
-            $0.keys == $1.keys && $0.app == $1.app && ($0.newWindow ?? true) == ($1.newWindow ?? true)
+            $0.keys == $1.keys && $0.app == $1.app && ($0.newWindow ?? .whenInFront) == ($1.newWindow ?? .whenInFront)
         }
     }
 

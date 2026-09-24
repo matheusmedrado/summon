@@ -5,8 +5,8 @@ struct Config: Codable {
         var id = UUID()
         var keys: String
         var app: String
-        /// When the app is already frontmost, press ⌘N in it for a fresh window.
-        var newWindow: Bool?
+        /// When to press ⌘N for a fresh window; nil means `.whenInFront`.
+        var newWindow: NewWindow?
 
         enum CodingKeys: String, CodingKey { case keys, app, newWindow }
     }
@@ -83,7 +83,11 @@ struct Config: Codable {
 
         var sections = [list("bindings", bindings.map { entry in
             var fields = [("keys", quoted(entry.keys)), ("app", quoted(entry.app))]
-            if entry.newWindow == false { fields.append(("newWindow", "false")) }
+            switch entry.newWindow {
+            case .off: fields.append(("newWindow", "false"))
+            case .always: fields.append(("newWindow", quoted("always")))
+            case .whenInFront, nil: break
+            }
             return fields.map { (key: $0.0, value: $0.1) }
         })]
         if let remaps, !remaps.isEmpty {
@@ -107,7 +111,38 @@ struct Binding {
     let keys: String
     let appURL: URL
     let bundleID: String?
-    let newWindow: Bool
+    let newWindow: NewWindow
+}
+
+/// When a hotkey opens a fresh window in its app. In the config file:
+/// `false`, `true` (the default) or `"always"`.
+enum NewWindow: Codable, Equatable {
+    /// Only bring the app forward.
+    case off
+    /// Press ⌘N when the app is already in front.
+    case whenInFront
+    /// Bring the app forward and open a new window every time.
+    case always
+
+    init(from decoder: Decoder) throws {
+        let value = try decoder.singleValueContainer()
+        if let on = try? value.decode(Bool.self) {
+            self = on ? .whenInFront : .off
+        } else if try value.decode(String.self) == "always" {
+            self = .always
+        } else {
+            throw DecodingError.dataCorruptedError(in: value, debugDescription: "newWindow is true, false or \"always\"")
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var value = encoder.singleValueContainer()
+        switch self {
+        case .off: try value.encode(false)
+        case .whenInFront: try value.encode(true)
+        case .always: try value.encode("always")
+        }
+    }
 }
 
 struct Resolved {
@@ -131,7 +166,7 @@ func resolve(_ config: Config) -> Resolved {
         }
         out.bindings.append(Binding(combo: combo, keys: entry.keys, appURL: url,
                                     bundleID: Bundle(url: url)?.bundleIdentifier,
-                                    newWindow: entry.newWindow ?? true))
+                                    newWindow: entry.newWindow ?? .whenInFront))
     }
     for remap in config.remaps ?? [] {
         guard let trigger = Combo(remap.keys) else {

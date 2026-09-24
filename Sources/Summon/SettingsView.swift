@@ -240,7 +240,8 @@ private struct HotkeyRow: View {
     private var note: (String, Color)? {
         if appURL == nil { return ("App not found", .orange) }
         if store.conflicts(entry) { return ("Same keys as another hotkey or remap", .orange) }
-        if entry.newWindow == false { return ("Only brings it forward", .secondary) }
+        if entry.newWindow == .off { return ("Only brings it forward", .secondary) }
+        if entry.newWindow == .always { return ("New window every time", .secondary) }
         return nil
     }
 
@@ -263,9 +264,13 @@ private struct HotkeyRow: View {
                           onCancel: store.cancelRecording)
 
             Menu {
-                Toggle("New Window When Already in Front", isOn: SwiftUI.Binding(
-                    get: { entry.newWindow ?? true },
-                    set: { _ in store.toggleNewWindow(entry.id) }))
+                Picker("New Window", selection: SwiftUI.Binding(
+                    get: { entry.newWindow ?? .whenInFront },
+                    set: { store.setNewWindow($0, for: entry.id) })) {
+                    Text("Never").tag(NewWindow.off)
+                    Text("When Already in Front").tag(NewWindow.whenInFront)
+                    Text("Every Time").tag(NewWindow.always)
+                }
                 Button("Change App…") { store.changeApp(entry.id) }
                 Divider()
                 Button("Remove Hotkey", role: .destructive) { store.remove(entry.id) }

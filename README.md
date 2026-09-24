@@ -58,7 +58,7 @@ Everything lives in `~/.config/summon/config.json`. The settings window edits th
 - **Keys**: letters, digits, `return`, `space`, `tab`, `escape`, `delete`, `forwarddelete`, `left`, `right`, `up`, `down`, `home`, `end`, `pageup`, `pagedown`, `f1` to `f20`, and `minus`, `equal`, `comma`, `period`, `slash`, `semicolon`, `quote`, `backslash`, `grave`, `leftbracket`, `rightbracket`. Keys are matched by their position on a US layout.
 - **Apps**: a name (`Safari`), a bundle ID (`com.apple.Safari`) or a path.
 - **Sequences**: separate combos with spaces in `send`.
-- **Options**: `"newWindow": false` on a binding only brings the app forward. A remap without `app` works everywhere; one with `app` wins inside that app.
+- **Options**: `"newWindow": false` on a binding only brings the app forward; `"newWindow": "always"` opens a new window every time, even from another app. A remap without `app` works everywhere; one with `app` wins inside that app.
 
 ## How it works
 
