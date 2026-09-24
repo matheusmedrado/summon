@@ -9,9 +9,12 @@ VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" Resource
 APP=build/Summon.app
 LABEL=com.matheusmedrado.summon
 
+# One build folder per architecture: newer toolchains put every triple in
+# the same products folder, so the second build would overwrite the first.
 build_arch() {
-    swift build -c release --triple "$1-apple-macosx14.0" >&2
-    echo "$(swift build -c release --triple "$1-apple-macosx14.0" --show-bin-path)/Summon"
+    local args=(-c release --triple "$1-apple-macosx14.0" --scratch-path ".build/$1")
+    swift build "${args[@]}" >&2
+    echo "$(swift build "${args[@]}" --show-bin-path)/Summon"
 }
 
 ARM=$(build_arch arm64)
