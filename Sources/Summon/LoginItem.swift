@@ -1,10 +1,14 @@
 import AppKit
 import ServiceManagement
 
-/// Starts Summon at login through launchd, from the agent plist inside the
-/// app bundle: it runs as soon as you log in and is restarted if it crashes.
+/// Starts Summon at login as a regular login item, like any other app.
 enum LoginItem {
-    private static let service = SMAppService.agent(plistName: "com.matheusmedrado.summon.plist")
+    private static let service = SMAppService.mainApp
+    /// Older versions started at login through a launchd agent. Without a
+    /// Team ID, launchd pins that agent to the exact build it was registered
+    /// from, so after any update it refused to start Summon at login. Its
+    /// plist stays in the bundle only so the old registration can be removed.
+    private static let oldAgent = SMAppService.agent(plistName: "com.matheusmedrado.summon.plist")
 
     static var isEnabled: Bool { service.status == .enabled }
     static var needsApproval: Bool { service.status == .requiresApproval }
@@ -20,10 +24,28 @@ enum LoginItem {
 
     /// On by default: turned on once, on first launch, and left to the user after.
     static func enableOnFirstLaunch() {
+        migrateFromAgent()
         log("open at login status: \(service.status.rawValue) (0 not registered, 1 enabled, 2 needs approval, 3 not found)")
         let key = "loginItemConfigured"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         UserDefaults.standard.set(true, forKey: key)
+        if !isEnabled { set(true) }
+    }
+
+    /// Moves an old agent registration over to the login item, keeping the
+    /// user's on/off choice. Skipped when the agent itself started this copy,
+    /// since unregistering the agent would stop it; the next launch by hand
+    /// (or after an update breaks the agent) does it instead.
+    private static func migrateFromAgent() {
+        guard ProcessInfo.processInfo.environment["SUMMON_AGENT"] == nil else { return }
+        let status = oldAgent.status
+        guard status == .enabled || status == .requiresApproval else { return }
+        do {
+            try oldAgent.unregister()
+            log("removed old launchd agent")
+        } catch {
+            log("couldn't remove old launchd agent: \(error.localizedDescription)")
+        }
         if !isEnabled { set(true) }
     }
 }

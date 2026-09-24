@@ -62,7 +62,7 @@ Everything lives in `~/.config/summon/config.json`. The settings window edits th
 
 ## How it works
 
-Summon listens with a keyboard event tap, which is why it needs Accessibility access. A matching combo is swallowed whole, key down to key up, so the app in front never sees any of it. Summon starts at login through launchd, restarts itself if it ever crashes, and opts out of App Nap so hotkeys answer instantly even after hours idle. Logs go to `~/Library/Logs/Summon.log`.
+Summon listens with a keyboard event tap, which is why it needs Accessibility access. A matching combo is swallowed whole, key down to key up, so the app in front never sees any of it. Summon starts at login as a regular login item and opts out of App Nap so hotkeys answer instantly even after hours idle. Logs go to `~/Library/Logs/Summon.log`.
 
 Requires macOS 14 or later.
 
